@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -62,7 +62,7 @@ export function CostCalculator() {
     }
   }
 
-  const calculateCompressedFees = () => {
+  const calculateCompressedFees = useCallback(() => {
     const transactionCount = Math.ceil(recipientCount / maxAddressesPerTransaction)
 
     // Convert lamports to SOL
@@ -77,9 +77,9 @@ export function CostCalculator() {
       priorityFee: priorityFeeSol.toFixed(2),
       total: (baseFeeSol + compressionFeeSol + priorityFeeSol).toFixed(2),
     }
-  }
+  }, [priorityFeeEstimate, recipientCount])
 
-  const calculateNormalFees = () => {
+  const calculateNormalFees = useCallback(() => {
     const transactionCount = Math.ceil(recipientCount / maxAddressesPerTransaction)
 
     // Convert lamports to SOL
@@ -93,7 +93,7 @@ export function CostCalculator() {
       priorityFee: priorityFeeSol.toFixed(2),
       total: (baseFeeSol + recipientCount * accountRent + priorityFeeSol).toFixed(2),
     }
-  }
+  }, [priorityFeeEstimate, recipientCount])
 
   useEffect(() => {
     getPriorityFeeEstimate()
@@ -101,11 +101,11 @@ export function CostCalculator() {
 
   const normalFees = useMemo(() => {
     return calculateNormalFees()
-  }, [recipientCount, priorityFeeEstimate])
+  }, [calculateNormalFees])
 
   const compressedFees = useMemo(() => {
     return calculateCompressedFees()
-  }, [recipientCount, priorityFeeEstimate])
+  }, [calculateCompressedFees])
 
   return (
     <main className="flex flex-col items-center justify-top my-12 space-y-12">

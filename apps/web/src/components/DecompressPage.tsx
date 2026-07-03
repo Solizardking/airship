@@ -52,6 +52,9 @@ interface Token {
   onDecompress?: (mint: PublicKey, amount: BN, tokenProgramId: PublicKey) => void
 }
 
+type NormalizeTokenAmount = (raw: string | number, decimals: number) => number
+type HandleDecompress = (mint: PublicKey, amount: BN, tokenProgramId: PublicKey) => Promise<void>
+
 const connection: Rpc = createRpc(import.meta.env.VITE_RPC_ENDPOINT, import.meta.env.VITE_RPC_ENDPOINT)
 
 const TokenCell = memo(({ token }: { token: Token }) => {
@@ -89,7 +92,7 @@ const TokenCell = memo(({ token }: { token: Token }) => {
   )
 })
 
-const getColumns = (normalizeTokenAmount: Function, handleDecompress: Function): ColumnDef<Token>[] => [
+const getColumns = (normalizeTokenAmount: NormalizeTokenAmount, handleDecompress: HandleDecompress): ColumnDef<Token>[] => [
   {
     id: 'select',
     header: ({ table }) => (
@@ -144,7 +147,7 @@ const getColumns = (normalizeTokenAmount: Function, handleDecompress: Function):
             variant="outline"
             size="sm"
             onClick={() => {
-              handleDecompress(token.mint, token.amount, token.tokenProgramId)
+              void handleDecompress(token.mint, token.amount, token.tokenProgramId)
             }}
           >
             Decompress
@@ -171,7 +174,7 @@ export function DecompressPage() {
   const [dialogState, setDialogState] = useState<DialogState>(DialogState.Idle)
   const [rowSelection, setRowSelection] = useState({})
 
-  const fetchCompressedTokenAccounts = async () => {
+  const fetchCompressedTokenAccounts = useCallback(async () => {
     if (connected && publicKey) {
       setIsLoading(true)
       try {
@@ -260,11 +263,11 @@ export function DecompressPage() {
         setIsLoading(false)
       }
     }
-  }
+  }, [connected, publicKey])
 
   useEffect(() => {
-    fetchCompressedTokenAccounts()
-  }, [connected, publicKey])
+    void fetchCompressedTokenAccounts()
+  }, [fetchCompressedTokenAccounts])
 
   const handleDecompress = useCallback(
     async (mint: PublicKey, amount: BN, tokenProgramId: PublicKey) => {
@@ -626,7 +629,7 @@ export function DecompressPage() {
 
   const columns = useMemo(
     () => getColumns(normalizeTokenAmount, handleDecompress),
-    [normalizeTokenAmount, handleDecompress]
+    [handleDecompress]
   )
 
   const table = useReactTable({

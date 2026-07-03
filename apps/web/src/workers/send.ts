@@ -11,7 +11,12 @@ const { driver, batchDriver } = new SQLocalDrizzle({
 
 const db = drizzle(driver, batchDriver);
 
-self.onmessage = async (e: MessageEvent<any>) => {
+type SendWorkerMessage = {
+  privateKey: string;
+  rpcUrl: string;
+};
+
+self.onmessage = async (e: MessageEvent<SendWorkerMessage>) => {
   const { privateKey, rpcUrl } = e.data;
 
   const keypair = getKeypairFromPrivateKey(privateKey);

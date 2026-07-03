@@ -11,7 +11,11 @@ const { driver, batchDriver } = new SQLocalDrizzle({
 
 const db = drizzle(driver, batchDriver);
 
-self.onmessage = async (e: MessageEvent<any>) => {
+type PollWorkerMessage = {
+  rpcUrl: string;
+};
+
+self.onmessage = async (e: MessageEvent<PollWorkerMessage>) => {
   const { rpcUrl } = e.data;
 
   try {

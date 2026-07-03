@@ -29,7 +29,7 @@ export function isValidPrivateKey(key: string): boolean {
   try {
     getKeypairFromPrivateKey(key);
     return true;
-  } catch (error) {
+  } catch {
     return false;
   }
 }
